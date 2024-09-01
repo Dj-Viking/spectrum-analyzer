@@ -4,11 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "node ./node_modules/typescript/bin/tsc -b . -w",
     "start": "powershell -ExecutionPolicy ByPass -File start.ps1"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "ws": "^8.18.0"
   }
 }
