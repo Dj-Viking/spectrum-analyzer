@@ -7,8 +7,7 @@ import { WS_PORT } from "./common.mjs";
     let app = await import("./app.mjs");
     
     ws.addEventListener('message', async (event) => {
-        console.log("MESSAGE CAME IN", event);
-        if (event.data.includes("hot")) {
+        if (event.data.includes("mjs")) {
             const cachebust = "?v=" + (Date.now().toString())
             app = await import("./app.mjs" + cachebust);
             app.app();
