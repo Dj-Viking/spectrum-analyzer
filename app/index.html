@@ -5,7 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spectrum Analyzer</title>
 </head>
+<style>
+    .row {
+        display: flex;
+        justify-content: center;
+        flex-direction: row;
+    }
+    .col {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+    }
+</style>
 <body>
+    <div class="row">
+        <div class="col">
+            <button>
+                start audio context
+            </button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <p>
+                volume level
+            </p>
+        </div>
+    </div>
     <script type="module" src="app.js"></script>
 </body>
 </html>
