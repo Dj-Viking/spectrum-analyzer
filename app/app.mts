@@ -1,15 +1,28 @@
-export function updateMeterRect(
+export function updateCanvas(
     ctx: CanvasRenderingContext2D,
-    params: {
+    type: "meter" | "spectrum",
+    meterParams?: {
         fillStyle: typeof ctx["fillStyle"],
         posx: number,
         posy: number,
         width: number,
         height: number
+    },
+    spectrumParams?: {
+        fillStyle: typeof ctx["fillStyle"],
+        posx: number,
+        posy: number,
+        width: number,
+        height: number
+        
     }
 ){
-    ctx.fillStyle = params.fillStyle;
-    ctx.fillRect(params.posx, params.posy, params.width, params.height);
+    if (type === "meter" && meterParams) {
+        ctx.fillStyle = meterParams.fillStyle;
+        ctx.fillRect(meterParams.posx, meterParams.posy, meterParams.width, meterParams.height);
+    } else {
+
+    }
 }
 export function app(
     appModule: typeof import("./app.mjs")
@@ -18,15 +31,15 @@ export function app(
     const volumeInput: HTMLInputElement = document.querySelector("#volume-input")!;
     const volumeLevel: HTMLSpanElement = document.querySelector("#level")!;
     const canvas: HTMLCanvasElement = document.querySelector("#canvas")!;
-    canvas.height = 100;
-    canvas.width = 100;
+    canvas.height = 200;
+    canvas.width = 200;
     canvas.style.border = "1px black solid";
-    const canvasMeterParams: Parameters<typeof appModule.updateMeterRect>[1] = {
+    const initialCanvasMeterParams: Parameters<typeof appModule.updateCanvas>[2] = {
         fillStyle: "#00ff00",
         posx: 0,
-        posy: canvas.height - canvas.height / 2,
+        posy: canvas.height - canvas.height / 4,
         width: canvas.width,
-        height: canvas.height / 2
+        height: canvas.height / 4
     }
     const ctx: CanvasRenderingContext2D = canvas.getContext("2d")!;
     let previousTimestamp = 0;
@@ -34,7 +47,7 @@ export function app(
         if (timestamp) {
             // clear canvas on each frame
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            appModule.updateMeterRect(ctx, canvasMeterParams)
+            appModule.updateCanvas(ctx, "meter", initialCanvasMeterParams)
             previousTimestamp = timestamp;
         }
         window.requestAnimationFrame(frame);
@@ -106,8 +119,10 @@ export function app(
                     // gainNode.connect(meterNode);
                     // plug microphone input into the speaker output
                     gainNode.connect(audioCtx.destination);
+                    
+                    // TODO: display statistics of the audio context
                 },
-                (error) => { throw new Error("could not get user media"); }
+                (error) => { throw new Error("could not get user media" + error); }
             );
         })();
     }
