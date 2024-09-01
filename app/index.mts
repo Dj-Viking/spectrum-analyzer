@@ -10,9 +10,13 @@ import { WS_PORT } from "./common.mjs";
         if (event.data.includes("mjs")) {
             const cachebust = "?v=" + (Date.now().toString())
             app = await import("./app.mjs" + cachebust);
-            app.app();
+            app.app(
+                app
+            );
         }
     });
-    app.app();
+    app.app(
+        app
+    );
     
 })();

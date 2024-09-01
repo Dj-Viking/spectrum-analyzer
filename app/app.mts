@@ -1,7 +1,45 @@
-export function app() {
+export function updateMeterRect(
+    ctx: CanvasRenderingContext2D,
+    params: {
+        fillStyle: typeof ctx["fillStyle"],
+        posx: number,
+        posy: number,
+        width: number,
+        height: number
+    }
+){
+    ctx.fillStyle = params.fillStyle;
+    ctx.fillRect(params.posx, params.posy, params.width, params.height);
+}
+export function app(
+    appModule: typeof import("./app.mjs")
+) {
     const startbtn: HTMLButtonElement = document.querySelector("#start-audio")!;
     const volumeInput: HTMLInputElement = document.querySelector("#volume-input")!;
     const volumeLevel: HTMLSpanElement = document.querySelector("#level")!;
+    const canvas: HTMLCanvasElement = document.querySelector("#canvas")!;
+    canvas.height = 100;
+    canvas.width = 100;
+    canvas.style.border = "1px black solid";
+    const canvasMeterParams: Parameters<typeof appModule.updateMeterRect>[1] = {
+        fillStyle: "#00ff00",
+        posx: 0,
+        posy: canvas.height - canvas.height / 2,
+        width: canvas.width,
+        height: canvas.height / 2
+    }
+    const ctx: CanvasRenderingContext2D = canvas.getContext("2d")!;
+    let previousTimestamp = 0;
+    function frame(timestamp?: number) {
+        if (timestamp) {
+            // clear canvas on each frame
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            appModule.updateMeterRect(ctx, canvasMeterParams)
+            previousTimestamp = timestamp;
+        }
+        window.requestAnimationFrame(frame);
+    }
+    window.requestAnimationFrame(frame);
     volumeInput.oninput = (e) => {
         const ev: MyEvent = e as any;
         volumeInput.value = ev.target.value;
