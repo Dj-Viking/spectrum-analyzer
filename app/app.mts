@@ -1,4 +1,5 @@
 import { FRAME_RATE_IN_MS } from "./common.mjs";
+import { MeterNode } from "./meternode.mjs";
 
 export function updateCanvas(
     ctx: CanvasRenderingContext2D,
@@ -37,29 +38,63 @@ export function app(
     const volumeEl: HTMLSpanElement = document.querySelector("#volume")!;
     const smoothingEl: HTMLInputElement = document.querySelector("#smoothing-input")!;
     const smoothingSpan: HTMLInputElement = document.querySelector("#smoothing")!;
-
+    let analyserNode: AnalyserNode = null as any;
+    let dataArray: Float32Array = new Float32Array(0);
+    let analyserBufferLength = 0;
+    let meterNode: MeterNode = null as any;
 
     const canvas: HTMLCanvasElement = document.querySelector("#canvas")!;
+    
     canvas.height = 100;
     canvas.width = 100;
     canvas.style.border = "1px black solid";
-    const canvasMeterParams: Parameters<typeof appModule.updateCanvas>[2] = {
-        fillStyle: "#00ff00",
-        posx: 0,
-        posy: canvas.height - canvas.height / 4,
-        width: canvas.width,
-        height: canvas.height / 4
-    }
 
-    const ctx: CanvasRenderingContext2D = canvas.getContext("2d")!;
+    const spectrumCanvas: HTMLCanvasElement = document.querySelector("#spectrum-canvas")!;
+    spectrumCanvas.height = 400;
+    spectrumCanvas.width = 400;
+    spectrumCanvas.style.border = "1px black solid";
+    
+    const spectrumCtx: CanvasRenderingContext2D = spectrumCanvas.getContext("2d")!;
+    
     let previousTimestamp = 0;
+    
+    function spectrumDraw() {
+        // console.log("spectrumdraw", spectrumCtx);
+        if (analyserNode) {
+            analyserNode.getFloatFrequencyData(dataArray);
+            // console.log("analyzernode", analyserNode);
+            // console.log("data", dataArray);
+            spectrumCtx.fillStyle = "grey"
+            spectrumCtx.fillRect(0, 0, spectrumCanvas.width, spectrumCanvas.height);
+        
+            const barWidth = (spectrumCanvas.width / analyserBufferLength) * 2.5;
+            let barPosX = 0;
+            // draw spectrum bars
+            for (let i = 0; i < analyserBufferLength; i++) {
+                const barHeight = (dataArray[i] + 140) * 2;
+                spectrumCtx.fillStyle = `rgb(${Math.floor(barHeight + 100)} 50 50)`;
+                spectrumCtx.fillRect(
+                    barPosX,
+                    spectrumCanvas.height - barHeight / 2,
+                    barWidth,
+                    barHeight / 2
+                );
+                barPosX += barWidth + 1;
+            }
+        
+        }
+
+        window.requestAnimationFrame((ts) => frameHandler(spectrumDraw)(ts));
+    }
+    
     function frameHandler(work: (...args: any[]) => void) {
         work();
         return function(timestamp?: number) {
             previousTimestamp = timestamp || 0;
         }
     }
-    window.requestAnimationFrame(frameHandler(() => null));
+
+    window.requestAnimationFrame(frameHandler(spectrumDraw));
 
     volumeInput.oninput = (e) => {
         const ev: MyEvent = e as any;
@@ -113,18 +148,23 @@ export function app(
                     // analyser nodes are built in
                     /**
                      * Connection routing:
-                        ===================
-
-                        for dual channel layouts:                +--->  analyzer[0]  ---+
-                                                                |                      |
-                        (source) --->  input  --->  splitter  ---+                      +--->  merger  --->  output  ---> (destination)
-                                                                |                      |
-                                                                +--->  analyzer[1]  ---+
+                        ===================                                                                               |                      |
+                        (source) --->  input  ---> meternode 
+                        --->  analyzer  --->  output  ---> (destination)
+                                                                
+                                                                
                      */
                     /** */
-                    const analysernode = audioCtx.createAnalyser();
+                    analyserNode = audioCtx.createAnalyser();
+                    analyserNode.fftSize = 512;
+                    const bufferLength = analyserNode.frequencyBinCount;
+                    dataArray = new Float32Array(bufferLength);
+                    analyserBufferLength = analyserNode.frequencyBinCount;
+                    console.log("anal node", analyserNode);
+                    // analyserNode.
+                    
 
-                    const meterNode = new meterNodeModule.MeterNode(
+                    meterNode = new meterNodeModule.MeterNode(
                         audioCtx,
                         FRAME_RATE_IN_MS,
                         appModule,
@@ -149,12 +189,15 @@ export function app(
                         smoothingEl.value = e.target!.value;
                         smoothingSpan.textContent = e.target!.value;
                         meterNode.smoothingNode = Number(e.target!.value);
+                        analyserNode.smoothingTimeConstant = Number(e.target!.value);
+                        console.log("anl node again", analyserNode);
                     };
 
                     // Connect the stream to the destination to hear yourself (or any other node for processing!)
                     mediaStreamSource.connect(gainNode);
                     // connect gain node to meter node for worklet thread processing
                     gainNode.connect(meterNode);
+                    gainNode.connect(analyserNode);
                     // plug microphone input into the speaker output
                     gainNode.connect(audioCtx.destination);
                     

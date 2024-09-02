@@ -7,6 +7,7 @@ export class MeterNode extends AudioWorkletNode {
     private _updateIntervalInMs: number = 0;
     private _smoothingNode: number = 0;
     private _volume: number = 0.01;
+    private _samples: Float32Array = new Float32Array();
     private _appModule: typeof import("./app.mjs");
     private _utilsModule: typeof import("./utils.mjs");
     private _canvas: HTMLCanvasElement;
@@ -25,7 +26,7 @@ export class MeterNode extends AudioWorkletNode {
         // establish the worklet node with parameters
         super(audioCtx, "meter", {
             numberOfInputs: 1,
-            numberOfOutputs: 0,
+            numberOfOutputs: 1,
             channelCount: 1,
             processorOptions: {
                 updateIntervalInMS: updateIntervalInMS || FRAME_RATE_IN_MS
@@ -41,6 +42,9 @@ export class MeterNode extends AudioWorkletNode {
         // every frame
         this.port.onmessage = (msgEvent) => {
             const event = msgEvent as MyMessageEvent;
+            if (event.data.samples) {
+                this.samples = event.data.samples;
+            }
             if (event.data.volume) {
                 this._volume = event.data.volume;
                 volumeEl.textContent = (event.data.volume).toString();
@@ -76,11 +80,21 @@ export class MeterNode extends AudioWorkletNode {
     }
 
     // { get; set; }
+    public get samples() {
+        return this._samples;
+    }
+    public set samples(updateSamples: Float32Array) {
+        this._samples = updateSamples;
+        this.port.postMessage({
+            samples: updateSamples
+        });
+    }
+
+    // { get; set; }
     public get smoothingNode() {
         return this._smoothingNode;
     }
     public set smoothingNode(updateSmoothingFactor) {
-        console.log("smoothing factor set in meter node\n", updateSmoothingFactor);
         this._smoothingNode = updateSmoothingFactor;
 
         this.port.postMessage({

@@ -37,13 +37,12 @@ class MeterProcessor extends AudioWorkletProcessor {
         this._volume = 0.01;
         this._updateIntervalInMS = 0;
         this._updateNextFrame = this._updateIntervalInMS;
-        // PLEASE DO NOT DEFINE AS A MEMBER IN CHILD CLASS
+        // PLEASE DO NOT DEFINE port AS A MEMBER IN CHILD CLASS
         this.port.onmessage = (e) => {
             /**
              * @type {globalThis.MessageEvent<Partial<MyMessage>>}
              */
             const event = e;
-            console.log("processsor got message", event);
             if (event.data.smoothingFactor) {
                 this._smoothingFactor = event.data.smoothingFactor;
             }
@@ -96,6 +95,7 @@ class MeterProcessor extends AudioWorkletProcessor {
                 /**@type {Partial<MyMessage>} */
                 const msg = {
                     volume: this._volume,
+                    samples: monoInputMixdown
                 }
                 this.port.postMessage(msg);
             }
