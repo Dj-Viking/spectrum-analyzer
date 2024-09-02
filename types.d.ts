@@ -5,6 +5,7 @@ declare global {
     interface MyMessage {
         volume: number;
         updateIntervalInMS: number;
+        buffer?: ArrayBuffer;
         smoothingFactor: number;
     }
     interface MyEvent extends Event {

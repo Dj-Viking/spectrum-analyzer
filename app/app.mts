@@ -110,6 +110,20 @@ export function app(
                     // create source node where the audio will be taken into
                     const mediaStreamSource = audioCtx.createMediaStreamSource(streamNode.mediaStream);
 
+                    // analyser nodes are built in
+                    /**
+                     * Connection routing:
+                        ===================
+
+                        for dual channel layouts:                +--->  analyzer[0]  ---+
+                                                                |                      |
+                        (source) --->  input  --->  splitter  ---+                      +--->  merger  --->  output  ---> (destination)
+                                                                |                      |
+                                                                +--->  analyzer[1]  ---+
+                     */
+                    /** */
+                    const analysernode = audioCtx.createAnalyser();
+
                     const meterNode = new meterNodeModule.MeterNode(
                         audioCtx,
                         FRAME_RATE_IN_MS,

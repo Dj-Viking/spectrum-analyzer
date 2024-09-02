@@ -56,6 +56,13 @@ class MeterProcessor extends AudioWorkletProcessor {
         const sampleRate = 48000;
         return (this._updateIntervalInMS / 1000) * sampleRate;
     }
+    /**
+     * 
+     * @param {Float32Array[][]} inputs 
+     * @param {Float32Array[][]} outputs 
+     * @param {*} parameters 
+     * @returns 
+     */
     process(inputs, outputs, parameters) {
         // console.log("process", arguments);
         const input = inputs[0];
@@ -64,9 +71,10 @@ class MeterProcessor extends AudioWorkletProcessor {
         // connected then zero channels will be passed in.
         if (input.length > 0) {
             const monoInputMixdown = input[0];
+            // console.log("monoInputMixdown", monoInputMixdown);
             // const monoInputBuffer = input[0].buffer;
             // console.log("monoInputMixdown", monoInputMixdown.length);
-            // console.log("monoInputMixdown buffer", monoInputBuffer);
+            // console.log("typed array", new Uint8ClampedArray(monoInputBuffer));
             let sum = 0;
             let rms = 0;
             // Calculated the squared-sum from the samples from the input channel(s)
@@ -77,23 +85,25 @@ class MeterProcessor extends AudioWorkletProcessor {
             // console.log("what is sum here", sum);
             // Calculate the RMS level and update the volume.
             rms = Math.sqrt(sum / monoInputMixdown.length);
-            console.log("rms", rms);
-            if (Number.isNaN(this._volume)) {
-                console.log("VOLUME IS NAN WTF MATE!!");
-            }
+            // console.log("rms", rms);
+            
             this._volume = Math.max(rms, this._volume * this._smoothingFactor);
             // Update and sync the volume property with the main thread.
             this._updateNextFrame -= monoInputMixdown.length;
             if (this._updateNextFrame < 0) {
                 this._updateNextFrame += this.intervalInFrames;
-                // @ts-ignore
-                this.port.postMessage({ volume: this._volume });
+                
+                /**@type {Partial<MyMessage>} */
+                const msg = {
+                    volume: this._volume,
+                }
+                this.port.postMessage(msg);
             }
         }
         // Keep on processing if the volume is above a threshold, so that
         // disconnecting inputs does not immediately cause the meter to stop
         // computing its smoothed value.
-        console.log("process volume", this._volume, "min value", 0);
+        // console.log("process volume", this._volume, "min value", 0);
         return true;
         // if this returns false the processor dies and doesn't process anymore
         // the context will have to be reinstantiated

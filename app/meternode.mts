@@ -43,9 +43,6 @@ export class MeterNode extends AudioWorkletNode {
             const event = msgEvent as MyMessageEvent;
             if (event.data.volume) {
                 this._volume = event.data.volume;
-                if (Number.isNaN(event.data.volume) || Number.isNaN(this._volume)) {
-                    console.log("SOME SHIT IS NAN FUCK!!'");
-                }
                 volumeEl.textContent = (event.data.volume).toString();
                 // update meter canvas
                 const newHeight = this._volume * 2000;
