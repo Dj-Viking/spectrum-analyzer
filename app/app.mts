@@ -137,11 +137,11 @@ export function app(
 
                     // analyser nodes are built in
                     /**
-                     * Connection routing:
-                        ===================                                                                               |                      |
-                        (source) --->  input  ---> meternode 
-                        --->  analyzer  --->  output  ---> (destination)
-                                                                
+                     * Connection routing:                  /---> meterNode
+                        =================== /              /
+                        (source) --->  input  ---> gainNode  --->  output  ---> (destination)
+                                                           \
+                                                            \---> analyserNode
                                                                 
                      */
                     /** */
