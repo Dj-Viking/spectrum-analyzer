@@ -7,7 +7,7 @@
 // the file needs to be copied into the same location as the index.html
 // in ./dist/app
 
-
+// @ts-check
 /**
  * @see https://webaudio.github.io/web-audio-api/#AudioWorkletNodeOptions
  *
@@ -22,12 +22,14 @@
     object processorOptions;
 };
  */
+
+/// <reference types="./types" />
+// @ts-ignore
 class MeterProcessor extends AudioWorkletProcessor {
-    _smoothingFactor = 0.999;
-    _volume;
-    _updateIntervalInMS;
-    _updateNextFrame;
-    // @ts-expect-error inherited from AudioWorkletProcessor
+    _smoothingFactor = 0.01;
+    _volume = 0.01;
+    _updateIntervalInMS = 16.67;
+    _updateNextFrame = 16.67;
     constructor(options) {
         super(options);
         console.log("options from register in global audio worklet scope", options);
@@ -35,11 +37,15 @@ class MeterProcessor extends AudioWorkletProcessor {
         this._volume = 0.01;
         this._updateIntervalInMS = 0;
         this._updateNextFrame = this._updateIntervalInMS;
-        // @ts-expect-error port will be defined from the super
         // PLEASE DO NOT DEFINE AS A MEMBER IN CHILD CLASS
-        this.port.onmessage = (event) => {
-            if (event.data.smoothingInput) {
-                this._smoothingFactor = event.data.smoothingInput;
+        this.port.onmessage = (e) => {
+            /**
+             * @type {globalThis.MessageEvent<Partial<MyMessage>>}
+             */
+            const event = e;
+            console.log("processsor got message", event);
+            if (event.data.smoothingFactor) {
+                this._smoothingFactor = event.data.smoothingFactor;
             }
             if (event.data.updateIntervalInMS) {
                 this._updateIntervalInMS = event.data.updateIntervalInMS;
@@ -71,27 +77,33 @@ class MeterProcessor extends AudioWorkletProcessor {
             // console.log("what is sum here", sum);
             // Calculate the RMS level and update the volume.
             rms = Math.sqrt(sum / monoInputMixdown.length);
-            // console.log("rms", rms);
+            console.log("rms", rms);
+            if (Number.isNaN(this._volume)) {
+                console.log("VOLUME IS NAN WTF MATE!!");
+            }
             this._volume = Math.max(rms, this._volume * this._smoothingFactor);
             // Update and sync the volume property with the main thread.
             this._updateNextFrame -= monoInputMixdown.length;
             if (this._updateNextFrame < 0) {
                 this._updateNextFrame += this.intervalInFrames;
+                // @ts-ignore
                 this.port.postMessage({ volume: this._volume });
             }
         }
         // Keep on processing if the volume is above a threshold, so that
         // disconnecting inputs does not immediately cause the meter to stop
         // computing its smoothed value.
-        // console.log("process volume", this._volume, "min value", this.MINIMUM_VALUE);
+        console.log("process volume", this._volume, "min value", 0);
         return true;
         // if this returns false the processor dies and doesn't process anymore
         // the context will have to be reinstantiated
         // return this._volume >= this.MINIMUM_VALUE;
     }
 }
+// @ts-ignore
 console.log("audio worklet global scope", AudioWorkletGlobalScope);
 // can only be called here!! whenever audioCtx.audioWorklet.addModule(path: string); is called
 // this allows this js to be executed in the AudioWorkletGlobalScope which is separate
 // from the window's global scope
+// @ts-ignore
 registerProcessor("meter", MeterProcessor);

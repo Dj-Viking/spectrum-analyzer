@@ -121,7 +121,7 @@ export function app(
                     );
 
                     const gainNode = audioCtx.createGain();
-                    gainNode.gain.value = 0;
+                    gainNode.gain.value = 0.01;
                     // allow the input el to control the input gain of the microphone into the browser
                     volumeInput.oninput = (event) => {
                         volumeLevel.textContent = event.target!.value;

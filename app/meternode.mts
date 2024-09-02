@@ -6,7 +6,7 @@ import { FRAME_RATE_IN_MS, GREEN } from "./common.mjs";
 export class MeterNode extends AudioWorkletNode {
     private _updateIntervalInMs: number = 0;
     private _smoothingNode: number = 0;
-    private _volume: number = 0;
+    private _volume: number = 0.01;
     private _appModule: typeof import("./app.mjs");
     private _utilsModule: typeof import("./utils.mjs");
     private _canvas: HTMLCanvasElement;
@@ -43,6 +43,9 @@ export class MeterNode extends AudioWorkletNode {
             const event = msgEvent as MyMessageEvent;
             if (event.data.volume) {
                 this._volume = event.data.volume;
+                if (Number.isNaN(event.data.volume) || Number.isNaN(this._volume)) {
+                    console.log("SOME SHIT IS NAN FUCK!!'");
+                }
                 volumeEl.textContent = (event.data.volume).toString();
                 // update meter canvas
                 const newHeight = this._volume * 2000;
