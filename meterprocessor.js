@@ -1,3 +1,5 @@
+// TODO(Anders): the file wont have export {} at the bottom if it's a .ts extension
+
 // NOTE(Anders): for whatever reason this project
 // if this file was typescript it appends export {}; at the bottom of the file
 // and this cannot be parsed in the browser correctly
