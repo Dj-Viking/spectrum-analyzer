@@ -61,6 +61,7 @@ export function app(
     function spectrumDraw() {
         // console.log("spectrumdraw", spectrumCtx);
         if (analyserNode) {
+            // pass pointer to buffer by reference to get updated with fft data already done by analyser node
             analyserNode.getFloatFrequencyData(dataArray);
             // console.log("analyzernode", analyserNode);
             // console.log("data", dataArray);
