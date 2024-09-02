@@ -5,7 +5,8 @@ param(
 try {
     Start-Process node ".\node_modules\typescript\bin\tsc -b . -w" -WindowStyle Minimized;
 
-    Copy-Item ./app/index.html ./dist/app/;
+    Copy-Item .\app\index.html .\dist\app\;
+    Copy-Item .\meterprocessor.js .\dist\app\;
 
     Start-Process node ".\server.mjs" -WindowStyle Normal;
 

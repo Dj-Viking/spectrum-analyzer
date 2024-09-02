@@ -11,7 +11,7 @@ const PORT = 6969;
 
 const handleGetRequest = (req, res) => {
     switch(true) {
-        case req.url?.includes(".mjs"): {
+        case req.url?.includes(".mjs") || req.url?.includes(".js"): {
             const pth = (() => {
                 if (req.url?.includes("common")) {
                     return `./dist/app/common.mjs`;

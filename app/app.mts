@@ -1,3 +1,5 @@
+import { FRAME_RATE_IN_MS } from "./common.mjs";
+
 export function updateCanvas(
     ctx: CanvasRenderingContext2D,
     type: "meter" | "spectrum",
@@ -25,11 +27,14 @@ export function updateCanvas(
     }
 }
 export function app(
-    appModule: typeof import("./app.mjs")
+    appModule: typeof import("./app.mjs"),
+    utilsModule: typeof import("./utils.mjs"),
+    meterNodeModule: typeof import("./meternode.mjs"),
 ) {
     const startbtn: HTMLButtonElement = document.querySelector("#start-audio")!;
     const volumeInput: HTMLInputElement = document.querySelector("#volume-input")!;
     const volumeLevel: HTMLSpanElement = document.querySelector("#level")!;
+    const volumeEl: HTMLSpanElement = document.querySelector("#volume")!;
 
     const canvas: HTMLCanvasElement = document.querySelector("#canvas")!;
     canvas.height = 100;
@@ -45,16 +50,14 @@ export function app(
 
     const ctx: CanvasRenderingContext2D = canvas.getContext("2d")!;
     let previousTimestamp = 0;
-    function frame(timestamp?: number) {
-        if (timestamp) {
-            // clear canvas on each frame
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            appModule.updateCanvas(ctx, "meter", canvasMeterParams)
-            previousTimestamp = timestamp;
+    function frameHandler(ctx: CanvasRenderingContext2D, work: (...args: any[]) => void) {
+        work();
+        return function(timestamp?: number) {
+            previousTimestamp = timestamp || 0;
+            window.requestAnimationFrame((stamp) => frameHandler(ctx, work)(stamp));
         }
-        window.requestAnimationFrame(frame);
     }
-    window.requestAnimationFrame(frame);
+    window.requestAnimationFrame(frameHandler(ctx, () => null));
 
     volumeInput.oninput = (e) => {
         const ev: MyEvent = e as any;
@@ -62,14 +65,19 @@ export function app(
         volumeLevel.textContent = ev.target.value;
     }
     startbtn.onclick = () => {
+        const audioCtx = new AudioContext();
+
         (async () => {
             window.navigator.getUserMedia(
                 {
                     audio: true,
                 },
                 async (stream) => {
-                    const audioCtx = new AudioContext();
                     // add worklet module
+                    // NOTE(Anders): have to provide dist in the path because I think the context of this index.js is within the scope of dist folder
+                    // defined in the script tag of index.html otherwise we get "user aborted" error message which doesn't describe what went wrong
+                    // we only get more descriptive messages if the promise is uncaught - caught errors do not yield anything helpful here
+                    await audioCtx.audioWorklet.addModule("./meterprocessor.js");
 
                     // just grab the first track since chrome only has one input set as a "microphone input"
                     const audioTrack = stream.getAudioTracks()[0];
@@ -97,7 +105,15 @@ export function app(
 
                     // create a meter processing node
                     // TODO: 
-                    // const meterNode = new MeterNode(audioCtx, 15, this.meterSvg, this.volumeLevel);
+                    const meterNode = new meterNodeModule.MeterNode(
+                        audioCtx,
+                        FRAME_RATE_IN_MS,
+                        appModule,
+                        utilsModule,
+                        canvas,
+                        volumeEl,
+                        frameHandler
+                    );
 
                     const gainNode = audioCtx.createGain();
                     gainNode.gain.value = 0;
@@ -119,7 +135,7 @@ export function app(
                     // Connect the stream to the destination to hear yourself (or any other node for processing!)
                     mediaStreamSource.connect(gainNode);
                     // connect gain node to meter node for worklet thread processing
-                    // gainNode.connect(meterNode);
+                    gainNode.connect(meterNode);
                     // plug microphone input into the speaker output
                     gainNode.connect(audioCtx.destination);
                     

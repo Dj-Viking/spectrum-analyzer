@@ -1,9 +1,26 @@
 declare global {
+    interface MyMessageEvent {
+        data: MyMessage
+    }
+    interface MyMessage {
+        volume: number;
+        updateIntervalInMS: number;
+        smoothingInput: number;
+    }
     interface MyEvent extends Event {
         target: any;
     }
     interface EventTarget {
         value: any;
+    }
+
+    interface IAudioWorkletProcessor {
+        readonly port: globalThis.MessagePort;
+        process(
+            inputs: Float32Array[][],
+            outputs: Float32Array[][],
+            parameters: Record<string, unknown>
+        ): boolean;
     }
 
     class AudioWorkletProcessor {
