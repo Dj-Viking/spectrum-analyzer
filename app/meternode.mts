@@ -5,7 +5,7 @@ import { FRAME_RATE_IN_MS, GREEN } from "./common.mjs";
 
 export class MeterNode extends AudioWorkletNode {
     private _updateIntervalInMs: number = 0;
-    private _smoothingFactor: number = 0;
+    private _smoothingNode: number = 0;
     private _volume: number = 0;
     private _appModule: typeof import("./app.mjs");
     private _utilsModule: typeof import("./utils.mjs");
@@ -19,7 +19,6 @@ export class MeterNode extends AudioWorkletNode {
         canvas: HTMLCanvasElement,
         volumeEl: HTMLSpanElement,
         frameHandler: (
-            ctx: CanvasRenderingContext2D, 
             work: (...args: any[]) => void
         ) => (timestamp?: number) => void
     ) {
@@ -48,16 +47,17 @@ export class MeterNode extends AudioWorkletNode {
                 // update meter canvas
                 const newHeight = this._volume * 2000;
                 const ctx = this._canvas.getContext("2d")!;
-                function work() {
+                const work = () => {
+                    ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
                     appModule.updateCanvas(ctx, "meter", {
                         "fillStyle": GREEN,
                         "height": newHeight,
-                        "width": 10,
+                        "width": this._canvas.width,
                         "posx": 0,
-                        "posy": 0
+                        "posy": this._canvas.height - this._canvas.height / 2
                     })
                 }
-                requestAnimationFrame((ts) => frameHandler(ctx, work)(ts));
+                requestAnimationFrame((ts) => frameHandler(work)(ts));
             }
         }
 
@@ -76,14 +76,15 @@ export class MeterNode extends AudioWorkletNode {
     }
 
     // { get; set; }
-    public get smoothingFactor() {
-        return this._smoothingFactor;
+    public get smoothingNode() {
+        return this._smoothingNode;
     }
-    public set smoothingFactor(smoothingInput) {
-        this.smoothingFactor = smoothingInput;
+    public set smoothingNode(updateSmoothingFactor) {
+        console.log("smoothing factor set in meter node\n", updateSmoothingFactor);
+        this._smoothingNode = updateSmoothingFactor;
 
         this.port.postMessage({
-            smoothingInput,
+            smoothingFactor: updateSmoothingFactor,
         } as Partial<MyMessage>);
     }
 }

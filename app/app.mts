@@ -35,6 +35,9 @@ export function app(
     const volumeInput: HTMLInputElement = document.querySelector("#volume-input")!;
     const volumeLevel: HTMLSpanElement = document.querySelector("#level")!;
     const volumeEl: HTMLSpanElement = document.querySelector("#volume")!;
+    const smoothingEl: HTMLInputElement = document.querySelector("#smoothing-input")!;
+    const smoothingSpan: HTMLInputElement = document.querySelector("#smoothing")!;
+
 
     const canvas: HTMLCanvasElement = document.querySelector("#canvas")!;
     canvas.height = 100;
@@ -50,19 +53,23 @@ export function app(
 
     const ctx: CanvasRenderingContext2D = canvas.getContext("2d")!;
     let previousTimestamp = 0;
-    function frameHandler(ctx: CanvasRenderingContext2D, work: (...args: any[]) => void) {
+    function frameHandler(work: (...args: any[]) => void) {
         work();
         return function(timestamp?: number) {
             previousTimestamp = timestamp || 0;
-            window.requestAnimationFrame((stamp) => frameHandler(ctx, work)(stamp));
         }
     }
-    window.requestAnimationFrame(frameHandler(ctx, () => null));
+    window.requestAnimationFrame(frameHandler(() => null));
 
     volumeInput.oninput = (e) => {
         const ev: MyEvent = e as any;
         volumeInput.value = ev.target.value;
         volumeLevel.textContent = ev.target.value;
+    }
+    smoothingEl.oninput = (e) => {
+        const ev: MyEvent = e as any;
+        smoothingEl.value = ev.target.value;
+        smoothingSpan.textContent = (ev.target.value).toString();
     }
     startbtn.onclick = () => {
         const audioCtx = new AudioContext();
@@ -124,11 +131,11 @@ export function app(
 
                     // TODO: 
                     // adjust smoothing in the meterprocessor via the meternode message port
-                    // this.smoothingCtrl.inputEl.addEventListener("input", (e) => {
-                    //     this.smoothingCtrl.inputEl.value = e.target!.value;
-                    //     this.smoothingCtrl.valueEl.textContent = e.target!.value;
-                    //     meterNode.smoothingFactor = Number(e.target!.value);
-                    // });
+                    smoothingEl.oninput = (e) => {
+                        smoothingEl.value = e.target!.value;
+                        smoothingSpan.textContent = e.target!.value;
+                        meterNode.smoothingNode = Number(e.target!.value);
+                    };
 
                     // Connect the stream to the destination to hear yourself (or any other node for processing!)
                     mediaStreamSource.connect(gainNode);
