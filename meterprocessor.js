@@ -26,7 +26,7 @@
 /// <reference types="./types" />
 // @ts-ignore
 class MeterProcessor extends AudioWorkletProcessor {
-    _smoothingFactor = 0.01;
+    _smoothingFactor = 0.96;
     _volume = 0.01;
     _updateIntervalInMS = 16.67;
     _updateNextFrame = 16.67;
