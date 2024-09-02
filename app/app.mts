@@ -59,12 +59,9 @@ export function app(
     let previousTimestamp = 0;
     
     function spectrumDraw() {
-        // console.log("spectrumdraw", spectrumCtx);
         if (analyserNode) {
             // pass pointer to buffer by reference to get updated with fft data already done by analyser node
             analyserNode.getFloatFrequencyData(dataArray);
-            // console.log("analyzernode", analyserNode);
-            // console.log("data", dataArray);
             spectrumCtx.fillStyle = "grey"
             spectrumCtx.fillRect(0, 0, spectrumCanvas.width, spectrumCanvas.height);
         
