@@ -9,7 +9,7 @@ declare global {
         smoothingFactor: number;
     }
     interface MyEvent extends Event {
-        target: any;
+        target: EventTarget;
     }
     interface EventTarget {
         value: any;

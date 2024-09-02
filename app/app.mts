@@ -30,6 +30,8 @@ export function app(
     const volumeEl: HTMLSpanElement = document.querySelector("#volume")!;
     const smoothingEl: HTMLInputElement = document.querySelector("#smoothing-input")!;
     const smoothingSpan: HTMLInputElement = document.querySelector("#smoothing")!;
+    const barheightEl: HTMLInputElement = document.querySelector("#barheight-input")!;
+    const barheightSpan: HTMLInputElement = document.querySelector("#barheight")!;
     let analyserNode: AnalyserNode = null as any;
     let dataArray: Float32Array = new Float32Array(0);
     let analyserBufferLength = 0;
@@ -61,7 +63,7 @@ export function app(
             let barPosX = 0;
             // draw spectrum bars
             for (let i = 0; i < analyserBufferLength; i++) {
-                const barHeight = (dataArray[i] + 140) * 2;
+                const barHeight = (dataArray[i] + Number(barheightEl.value)) * 10;
                 spectrumCtx.fillStyle = `rgb(${Math.floor(barHeight + 100)} 50 50)`;
                 spectrumCtx.fillRect(
                     barPosX,
@@ -95,6 +97,11 @@ export function app(
         const ev: MyEvent = e as any;
         smoothingEl.value = ev.target.value;
         smoothingSpan.textContent = (ev.target.value).toString();
+    }
+    barheightEl.oninput = (e) => {
+        const ev: MyEvent = e as any;
+        barheightEl.value = ev.target.value;
+        barheightSpan.textContent = (ev.target.value).toString();
     }
     startbtn.onclick = () => {
         const audioCtx = new AudioContext();
@@ -180,7 +187,6 @@ export function app(
                         smoothingSpan.textContent = e.target!.value;
                         meterNode.smoothingNode = Number(e.target!.value);
                         analyserNode.smoothingTimeConstant = Number(e.target!.value);
-                        console.log("anl node again", analyserNode);
                     };
 
                     // Connect the stream to the destination to hear yourself (or any other node for processing!)
