@@ -11,14 +11,6 @@ export function updateCanvas(
         width: number,
         height: number
     },
-    spectrumParams?: {
-        fillStyle: typeof ctx["fillStyle"],
-        posx: number,
-        posy: number,
-        width: number,
-        height: number
-        
-    }
 ){
     if (type === "meter" && meterParams) {
         ctx.fillStyle = meterParams.fillStyle;
