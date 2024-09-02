@@ -64,7 +64,7 @@ export function app(
             // draw spectrum bars
             for (let i = 0; i < analyserBufferLength; i++) {
                 const barHeight = (dataArray[i] + Number(barheightEl.value)) * 10;
-                spectrumCtx.fillStyle = `rgb(${Math.floor(barHeight + 100)} 50 50)`;
+                spectrumCtx.fillStyle = `rgb(${Math.floor(barHeight + 10)} 50 50)`;
                 spectrumCtx.fillRect(
                     barPosX,
                     spectrumCanvas.height - barHeight / 2,
