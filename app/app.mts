@@ -30,29 +30,32 @@ export function app(
     const startbtn: HTMLButtonElement = document.querySelector("#start-audio")!;
     const volumeInput: HTMLInputElement = document.querySelector("#volume-input")!;
     const volumeLevel: HTMLSpanElement = document.querySelector("#level")!;
+
     const canvas: HTMLCanvasElement = document.querySelector("#canvas")!;
-    canvas.height = 200;
-    canvas.width = 200;
+    canvas.height = 100;
+    canvas.width = 100;
     canvas.style.border = "1px black solid";
-    const initialCanvasMeterParams: Parameters<typeof appModule.updateCanvas>[2] = {
+    const canvasMeterParams: Parameters<typeof appModule.updateCanvas>[2] = {
         fillStyle: "#00ff00",
         posx: 0,
         posy: canvas.height - canvas.height / 4,
         width: canvas.width,
         height: canvas.height / 4
     }
+
     const ctx: CanvasRenderingContext2D = canvas.getContext("2d")!;
     let previousTimestamp = 0;
     function frame(timestamp?: number) {
         if (timestamp) {
             // clear canvas on each frame
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            appModule.updateCanvas(ctx, "meter", initialCanvasMeterParams)
+            appModule.updateCanvas(ctx, "meter", canvasMeterParams)
             previousTimestamp = timestamp;
         }
         window.requestAnimationFrame(frame);
     }
     window.requestAnimationFrame(frame);
+
     volumeInput.oninput = (e) => {
         const ev: MyEvent = e as any;
         volumeInput.value = ev.target.value;

@@ -8,6 +8,8 @@ try {
     Copy-Item ./app/index.html ./dist/app/;
 
     Start-Process node ".\server.mjs" -WindowStyle Normal;
+
+    chrome "http://localhost:6969";
 }
 catch {
     throw $_;
