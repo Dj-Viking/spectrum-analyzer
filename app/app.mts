@@ -103,8 +103,6 @@ export function app(
                     // create source node where the audio will be taken into
                     const mediaStreamSource = audioCtx.createMediaStreamSource(streamNode.mediaStream);
 
-                    // create a meter processing node
-                    // TODO: 
                     const meterNode = new meterNodeModule.MeterNode(
                         audioCtx,
                         FRAME_RATE_IN_MS,
