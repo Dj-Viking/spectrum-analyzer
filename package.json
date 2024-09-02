@@ -7,6 +7,9 @@
     "dev": "node ./node_modules/typescript/bin/tsc -b . -w",
     "start": "powershell -ExecutionPolicy ByPass -File start.ps1"
   },
+  "repository": {
+    "url": "git@github.com:Dj-Viking/spectrum-analyzer.git"
+  },
   "author": "",
   "license": "ISC",
   "devDependencies": {
