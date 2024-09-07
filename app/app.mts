@@ -32,7 +32,19 @@ export function app(
     const smoothingSpan: HTMLInputElement = document.querySelector("#smoothing")!;
     const barheightEl: HTMLInputElement = document.querySelector("#barheight-input")!;
     const barheightSpan: HTMLInputElement = document.querySelector("#barheight")!;
+    const colorvariationEl: HTMLInputElement = document.querySelector("#colorvariation-input")!;
+    const colorvariationSpan: HTMLInputElement = document.querySelector("#colorvariation")!;
     let analyserNode: AnalyserNode = null as any;
+    /**
+     * sample array
+     * 
+     * samples array indicies represent decibel value of that frequency(?) 
+     * 
+     * NOTE: probably the fft calculations given by the analyserNode 
+     * 
+     * the last value in the array for a 48000Hz sample rate is 0.5*samplerate
+     * which is frequency value of 24000Hz and the array item is the decibel level for that frequency
+     */
     let dataArray: Float32Array = new Float32Array(0);
     let analyserBufferLength = 0;
     let meterNode: MeterNode = null as any;
@@ -64,10 +76,12 @@ export function app(
             // draw spectrum bars
             for (let i = 0; i < analyserBufferLength; i++) {
                 const barHeight = (dataArray[i] + Number(barheightEl.value)) * 10;
-                spectrumCtx.fillStyle = `rgb(${Math.floor(barHeight + 10)} 50 50)`;
+                const finalBarHeight = spectrumCanvas.height - barHeight / 2
+                let wheel = Math.floor(finalBarHeight - 40);
+                spectrumCtx.fillStyle = `hsl(${(wheel / 4) - (Number(colorvariationEl.value) - finalBarHeight - i) } 50 50)`;
                 spectrumCtx.fillRect(
                     barPosX,
-                    spectrumCanvas.height - barHeight / 2,
+                    finalBarHeight,
                     barWidth,
                     barHeight / 2
                 );
@@ -102,6 +116,11 @@ export function app(
         const ev: MyEvent = e as any;
         barheightEl.value = ev.target.value;
         barheightSpan.textContent = (ev.target.value).toString();
+    }
+    colorvariationEl.oninput = (e) => {
+        const ev: MyEvent = e as any;
+        colorvariationEl.value = ev.target.value;
+        colorvariationSpan.textContent = (ev.target.value).toString();
     }
     startbtn.onclick = () => {
         const audioCtx = new AudioContext();
