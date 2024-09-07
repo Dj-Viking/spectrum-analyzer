@@ -172,7 +172,7 @@ export function app(
                      */
                     /** */
                     analyserNode = audioCtx.createAnalyser();
-                    analyserNode.fftSize = 512;
+                    analyserNode.fftSize = 2048;
                     const bufferLength = analyserNode.frequencyBinCount;
                     dataArray = new Float32Array(bufferLength);
                     analyserBufferLength = analyserNode.frequencyBinCount;
