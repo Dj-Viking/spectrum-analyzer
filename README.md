@@ -1,10 +1,4 @@
 # Spectrum Analyzer
-<style>
-    .statement {
-        margin: 0;
-        color: white;
-    }
-</style>
 <p class="statement">Makes use of the web audio API to take microphone input signal as a source.</p>
 <p class="statement">as well as the built-in <a href="https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode" rel="noopener noreferrer">AnalyserNode</a> interface from the web audio API.</p>
 <br/>
